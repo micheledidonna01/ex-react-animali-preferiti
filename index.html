@@ -30,11 +30,19 @@
     <script type="text/babel">
         const ReactComponent = () => {
         const {useState} = React;
-        const [animali, setAnimali] = useState(['Cane', 'Gatto', 'Coniglio', 'Pesce']);
-        const incrementa = () => {
-            setCount(count + 1);
-        };
-
+        const [animali, setAnimali] = useState([]);
+        const animalsChoices = ["Cane", "Gatto", "Pappagallo", "Cavallo", "Panda"];
+        
+        function aggiungiAnimale(){
+            const animalsChoices = ["Cane", "Gatto", "Pappagallo", "Cavallo", "Panda"];
+            const animaleRandom = animalsChoices[Math.floor(Math.random() * animalsChoices.length)];
+            if(animali.find(a => a === animaleRandom)) {
+                console.log("Animale già presente");
+                return;
+            }
+            setAnimali([...animali, animaleRandom]);   
+            console.log(animaleRandom);
+        }
         return <>
             <details>
                 <summary>Animali</summary>
@@ -46,6 +54,7 @@
                     ))}
                 </ul>
             </details>
+            <button onClick={aggiungiAnimale}>Aggiungi animale</button>
             </>
         }
     </script>
