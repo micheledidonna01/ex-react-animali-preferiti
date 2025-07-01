@@ -7,21 +7,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>I miei animali Preferiti</title>
     <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+        crossorigin="anonymous"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script type="text/babel">
         const { useState } = React;
         const { createPortal } = ReactDOM;
-
+        const { axios } = window;
         function Modal({
             title,
             content,
             show = {},
             onClose = () => { },
             aggiungiAnimale = () => { },
-            setAnimal,
-            animal
+            // setAnimal,
+            // animal
 
         }) {
             return show && createPortal(
@@ -31,7 +37,6 @@
                         <p>{content}</p>
                         <div>
                             <label htmlFor="aggAn">Inserisci un nuovo animale:</label>
-                            <input type="text" name="aggAn" onChange={(e) => setAnimal(e.target.value)} />
                             <button onClick={onClose}>Annulla</button>
                             <button onClick={() => aggiungiAnimale(animal)}>Conferma</button>
 
@@ -43,39 +48,110 @@
         }
 
         const ReactComponent = () => {
-
+            const { useEffect } = React;
             const [animali, setAnimali] = useState([]);
             const [showModal, setShowModal] = useState(false);
 
+            const [isLoading, setIsLoading] = useState(false);
+            const [isError, setIsError] = useState(false);
+            
             const [animal, setAnimal] = useState("");
+            const [search, setSearch] = useState("");
+            // ?search = ${ animalName }
 
+            function getAnimals() {
+
+                setIsLoading(true);
+                axios.get('http://localhost:3333/animals', {
+                    params: {
+                        search
+                    }
+                })
+                    .then(res => {
+                        setAnimali(res.data);
+
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        setIsError(true);
+                    })
+                    .finally(() => {
+                        setIsLoading(false);
+                    });
+            }
+
+            useEffect(getAnimals, []);
+
+            let filterAnimali = animali;
+            if (search !== "") {
+                filterAnimali = animali.filter(animal => animal.name.toLowerCase().includes(search.toLowerCase()));
+
+            }
             function aggiungiAnimale() {
+                if(!animal) return;
                 setAnimali([...animali, animal]);
                 setAnimal("");
                 setShowModal(false)
             }
 
+            function filterAnimals(e) {
+                e.preventDefault();
+                getAnimals();
+                setSearch('');
+
+            }
+
+            if (isLoading && animali.length === 0) {
+                return <p>Caricamento in corso...</p>;
+            }
+            if (isError) {
+                return <p>Si è verificato un errore durante il caricamento degli animali.</p>;
+            }
             return <>
+                <div>
+                    <form onSubmit={filterAnimals}>
+                        <label htmlFor="search">Cerca animale</label>
+                        <input type="text" onChange={(e) => setSearch(e.target.value)} value={search} />
+                    </form>
+                </div>
                 <details>
                     <summary>Animali</summary>
-                    <ul>
-                        {animali.map((animale, index) => (
-                            <li key={index}>
-                                {animale}
-                            </li>
-                        ))}
+
+                    <ul className="row gap-2 list-unstyled">
+                        {filterAnimali.length === 0 ? <li className=" col-3 card bg-warning p-3 text-center">Nessun animale trovato</li>
+                            :
+                            filterAnimali.map((animal, index) => (
+                                <li key={index}>
+                                    <div className="card">
+                                        <div className="d-flex justify-content-center">
+                                            <img src="./image/animali.jpeg" alt={animal.title} className="card-img-top w-25 " />
+                                        </div>
+                                        <div className="card-body">
+                                            <h5 className="card-title">{animal.name}</h5>
+                                            <h6 className="card-subtitle mb-2 text-body-secondary">{animal.species}</h6>
+                                            <p className="card-text">{animal.description}</p>
+                                        </div>
+                                    </div>
+                                </li>
+                            ))}
                     </ul>
                 </details>
                 <section>
                     <button onClick={() => setShowModal(true)}>Apri Modal</button>
                     <Modal
                         title="Titolo"
-                        content="Contenuto del Modal"
+                        content={
+                            <input 
+                            type="text" 
+                            onChange={e => setAnimal(e.target.value)}
+                            value={animal} 
+                            />
+                        }
                         show={showModal}
                         onClose={() => setShowModal(false)}
                         aggiungiAnimale={aggiungiAnimale}
-                        setAnimal={setAnimal}
-                        animal={animal}
+                        // setAnimal={setAnimal}
+                        // animal={animal}
                     />
                 </section>
             </>
