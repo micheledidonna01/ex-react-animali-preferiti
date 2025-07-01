@@ -7,6 +7,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>I miei animali Preferiti</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel">
+        const { useState } = React;
+        const { createPortal } = ReactDOM;
+
+        function Modal({
+            title,
+            content,
+            show = {},
+            onClose = () => { },
+            aggiungiAnimale = () => { },
+            setAnimal,
+            animal
+
+        }) {
+            return show && createPortal(
+                <div className="modal-container">
+                    <div className="modal">
+                        <h2>{title}</h2>
+                        <p>{content}</p>
+                        <div>
+                            <label htmlFor="aggAn">Inserisci un nuovo animale:</label>
+                            <input type="text" name="aggAn" onChange={(e) => setAnimal(e.target.value)} />
+                            <button onClick={onClose}>Annulla</button>
+                            <button onClick={() => aggiungiAnimale(animal)}>Conferma</button>
+
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )
+        }
+
+        const ReactComponent = () => {
+
+            const [animali, setAnimali] = useState([]);
+            const [showModal, setShowModal] = useState(false);
+
+            const [animal, setAnimal] = useState("");
+
+            function aggiungiAnimale() {
+                setAnimali([...animali, animal]);
+                setAnimal("");
+                setShowModal(false)
+            }
+
+            return <>
+                <details>
+                    <summary>Animali</summary>
+                    <ul>
+                        {animali.map((animale, index) => (
+                            <li key={index}>
+                                {animale}
+                            </li>
+                        ))}
+                    </ul>
+                </details>
+                <section>
+                    <button onClick={() => setShowModal(true)}>Apri Modal</button>
+                    <Modal
+                        title="Titolo"
+                        content="Contenuto del Modal"
+                        show={showModal}
+                        onClose={() => setShowModal(false)}
+                        aggiungiAnimale={aggiungiAnimale}
+                        setAnimal={setAnimal}
+                        animal={animal}
+                    />
+                </section>
+            </>
+        }
+    </script>
+
+    <script type="text/babel">
+        const { createRoot } = ReactDOM;
+
+        const listaAnimali = document.querySelector('.lista-animali');
+        const root = createRoot(listaAnimali);
+        root.render(<ReactComponent />);
+        // ReactDOM.render(<ReactComponent />, document.querySelector('.lista-animali'));
+    </script>
 </head>
 
 <body>
@@ -17,56 +100,13 @@
         <figure>
             <img src="https://picsum.photos/400/300" alt="Immagine Casuale">
         </figure>
-         <div class="lista-animali"></div> 
+        <div class="lista-animali"></div>
     </main>
     <footer>
         <p>Creato con amore da... un collega sbadato! 🐾</p>
     </footer>
 
 
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script type="text/babel">
-        const ReactComponent = () => {
-        const {useState} = React;
-        const [animali, setAnimali] = useState([]);
-        const animalsChoices = ["Cane", "Gatto", "Pappagallo", "Cavallo", "Panda"];
-        
-        function aggiungiAnimale(){
-            const animalsChoices = ["Cane", "Gatto", "Pappagallo", "Cavallo", "Panda"];
-            const animaleRandom = animalsChoices[Math.floor(Math.random() * animalsChoices.length)];
-            if(animali.find(a => a === animaleRandom)) {
-                console.log("Animale già presente");
-                return;
-            }
-            setAnimali([...animali, animaleRandom]);   
-            console.log(animaleRandom);
-        }
-        return <>
-            <details>
-                <summary>Animali</summary>
-                <ul>
-                    {animali.map((animale, index) => (
-                        <li key={index}>
-                            {animale} 
-                        </li>
-                    ))}
-                </ul>
-            </details>
-            <button onClick={aggiungiAnimale}>Aggiungi animale</button>
-            </>
-        }
-    </script>
-
-    <script type="text/babel">
-        const {createRoot} = ReactDOM;
-
-        const listaAnimali = document.querySelector('.lista-animali');
-        const root  = createRoot(listaAnimali);
-        root.render(<ReactComponent />);
-        // ReactDOM.render(<ReactComponent />, document.querySelector('.lista-animali'));
-    </script>
 </body>
 
 </html>
